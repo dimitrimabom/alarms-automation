@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Reference Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/radio-tower.svg">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Main Container - Dynamic BG & Border based on Power Owner */
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 750px;
+            width: 100%;
+            border: 3.5px solid #e2e8f0;
+            transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        /* Power Owner Theme Classes applied to Entire Container */
+        .container.owner-ihs {
+            background-color: #e8f5e9; /* Soft IHS Green */
+            border-color: #004B32;     /* IHS Forest Green */
+            box-shadow: 0 6px 30px rgba(0, 75, 50, 0.2);
+        }
+        .container.owner-camusat {
+            background-color: #eef2f7; /* Soft Camusat Blue */
+            border-color: #1D3557;     /* Camusat Navy Blue */
+            box-shadow: 0 6px 30px rgba(29, 53, 87, 0.2);
+        }
+        .container.owner-ocm {
+            background-color: #fff3e0; /* Soft Orange */
+            border-color: #FF6600;     /* OCM/Orange Brand */
+            box-shadow: 0 6px 30px rgba(255, 102, 0, 0.25);
+        }
+        .container.owner-default {
+            background-color: #f8fafc;
+            border-color: #64748b;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #111;
+            margin-top: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        p {
+            color: #444;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            background: #ffffff;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #FFC000;
+        }
+        button {
+            background-color: #FFC000;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover { background-color: #e0a800; }
+        button:active { transform: scale(0.98); }
+        button:disabled {
+            background-color: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Grid for Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            display: none; /* hidden until search */
+        }
+
+        /* Standard Card Styles */
+        .card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+        }
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #666;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .card-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111;
+            word-break: break-word;
+        }
+
+        /* Top 3 Featured KPI Cards */
+        .card.featured {
+            grid-column: span 1;
+            border: 2px solid #222;
+            transition: all 0.35s ease;
+        }
+        .card.featured .card-value {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        /* Dynamic Theme Styling for All 3 Featured Cards */
+        .theme-ihs .card.featured {
+            background-color: #ffffff;
+            border-color: #004B32;
+        }
+        .theme-ihs .card.featured .card-label,
+        .theme-ihs .card.featured .card-value {
+            color: #004B32;
+        }
+
+        .theme-camusat .card.featured {
+            background-color: #ffffff;
+            border-color: #1D3557;
+        }
+        .theme-camusat .card.featured .card-label,
+        .theme-camusat .card.featured .card-value {
+            color: #1D3557;
+        }
+
+        .theme-ocm .card.featured {
+            background-color: #ffffff;
+            border-color: #FF6600;
+        }
+        .theme-ocm .card.featured .card-label { color: #C44D00; }
+        .theme-ocm .card.featured .card-value { color: #FF6600; }
+
+        .theme-default .card.featured {
+            background-color: #ffffff;
+            border-color: #4A5568;
+        }
+        .theme-default .card.featured .card-label,
+        .theme-default .card.featured .card-value {
+            color: #4A5568;
+        }
+
+        /* Dynamic Red Theme for Backbone = YES */
+        .card.backbone-yes {
+            background-color: #fde8e8 !important;
+            border: 2px solid #e53e3e !important;
+        }
+        .card.backbone-yes .card-label {
+            color: #9b1c1c !important;
+        }
+        .card.backbone-yes .card-value {
+            color: #9b1c1c !important;
+            font-weight: 800;
+        }
+
+        .full-width {
+            grid-column: span 3;
+        }
+
+        #status-msg {
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .error { color: #d9534f; }
+        .info { color: #555; }
+
+        :root {
+            --ink: #17231f;
+            --muted: #64716c;
+            --line: #dce4df;
+            --amber: #f2bf24;
+            --green: #21463a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            padding: 38px 22px;
+            display: grid;
+            place-items: center;
+            background-color: #edf1ed;
+            background-image: linear-gradient(rgba(255,255,255,0.44) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.44) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+        }
+        .container {
+            position: relative;
+            overflow: hidden;
+            max-width: 930px;
+            padding: 36px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            box-shadow: 0 18px 50px rgba(24, 45, 37, 0.09);
+        }
+        .container::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 5px;
+            background: linear-gradient(90deg, var(--amber) 0 28%, var(--green) 28% 100%);
+        }
+        .container.owner-ihs { background-color: #e8f5e9; }
+        .container.owner-camusat { background-color: #eef2f7; }
+        .container.owner-ocm { background-color: #fff3e0; }
+        .container.owner-default { background-color: #f8fafc; }
+        .masthead {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            border-radius: 7px;
+            background: var(--green);
+            color: #fff;
+            font-size: 24px;
+        }
+        .eyebrow {
+            margin-bottom: 3px;
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        h1 {
+            margin: 0;
+            color: var(--ink);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 29px;
+            line-height: 1.15;
+        }
+        p {
+            max-width: 650px;
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+        .search-box {
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            min-width: 0;
+            min-height: 52px;
+            padding: 12px 15px;
+            border: 1px solid #bdcbc2;
+            border-radius: 6px;
+            color: var(--ink);
+            font: 500 15px 'DM Sans', sans-serif;
+            box-shadow: inset 0 1px 2px rgba(23, 35, 31, 0.04);
+        }
+        input[type="text"]:focus {
+            border-color: var(--green);
+            outline: 3px solid rgba(242, 191, 36, 0.35);
+        }
+        button {
+            min-width: 120px;
+            min-height: 52px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            background: var(--amber);
+            color: #211b09;
+            font: 700 14px 'DM Sans', sans-serif;
+            transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        button:hover {
+            background: #e8b20e;
+            box-shadow: 0 4px 12px rgba(161, 119, 0, 0.18);
+        }
+        button:focus-visible {
+            outline: 3px solid var(--green);
+            outline-offset: 3px;
+        }
+        button:disabled { background: #e7ebe8; color: #8a9690; }
+        #status-msg {
+            min-height: 20px;
+            margin: 0 0 14px;
+            font-size: 13px;
+        }
+        .cards-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .card {
+            min-width: 0;
+            min-height: 88px;
+            padding: 15px;
+            border: 1px solid #d5ded8;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(24, 45, 37, 0.04);
+        }
+        .card-label {
+            color: #65736b;
+            font-size: 10px;
+            letter-spacing: 0.8px;
+        }
+        .card-value {
+            color: var(--ink);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .card.featured { border-radius: 7px; }
+        .card.featured .card-value { font-family: 'Space Grotesk', sans-serif; }
+        .full-width { grid-column: span 3; }
+        .lucide {
+            display: block;
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.9;
+        }
+        .brand-mark .lucide { width: 24px; height: 24px; }
+        .search-box button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        #status-msg.error { color: #a52c2c; }
+        @media (max-width: 700px) {
+            body { padding: 22px 14px; }
+            .container { padding: 30px 24px; }
+            .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .full-width { grid-column: span 2; }
+        }
+        @media (max-width: 480px) {
+            .container { padding: 27px 18px 20px; }
+            .masthead { gap: 12px; }
+            .brand-mark { flex-basis: 42px; width: 42px; height: 42px; }
+            h1 { font-size: 24px; }
+            .search-box { flex-direction: column; }
+            button { width: 100%; }
+            .cards-grid { grid-template-columns: minmax(0, 1fr); }
+            .full-width { grid-column: span 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+
+<main class="container" id="mainContainer">
+    <div class="masthead">
+        <div class="brand-mark" aria-hidden="true"><i data-lucide="radio-tower"></i></div>
+        <div>
+            <div class="eyebrow">Reference lookup</div>
+            <h1>Site Info Search</h1>
+        </div>
+    </div>
+    <p>Type a <strong>Site ID</strong> below to look up site specifications directly from <code>ref1.xlsx</code>.</p>
+
+    <div class="search-box">
+        <input type="text" id="siteIdInput" placeholder="Enter Site ID (e.g. 95 or 395)..." aria-label="Site ID">
+        <button id="searchBtn"><i data-lucide="search" aria-hidden="true"></i> Search</button>
+    </div>
+
+    <div id="status-msg" class="info" role="status" aria-live="polite">Ready to search.</div>
+
+    <!-- KPI Display Grid -->
+    <div class="cards-grid" id="resultsGrid">
+        
+        <!-- Header / Header Details -->
+        <div class="card full-width" style="background: #222; color: #fff;">
+            <div class="card-label" style="color: #FFC000;">Site Name & ID</div>
+            <div class="card-value" id="valSiteHeader" style="color: #fff; font-size: 20px;">-</div>
+        </div>
+
+        <!-- Dynamic Featured Cards (Power Owner, Power Type, Children) -->
+        <div class="card featured" id="cardPowerOwner">
+            <div class="card-label">Power Owner</div>
+            <div class="card-value" id="valPowerOwner">-</div>
+        </div>
+
+        <div class="card featured">
+            <div class="card-label">Power Type</div>
+            <div class="card-value" id="valPowerType">-</div>
+        </div>
+
+        <div class="card featured">
+            <div class="card-label">Children</div>
+            <div class="card-value" id="valChildren">-</div>
+        </div>
+
+        <!-- Structural & Regional Cards -->
+        <div class="card" id="cardBackbone">
+            <div class="card-label">Backbone Site</div>
+            <div class="card-value" id="valBackbone">-</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Rural Sites</div>
+            <div class="card-value" id="valRural">-</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Region</div>
+            <div class="card-value" id="valRegion">-</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Region 2</div>
+            <div class="card-value" id="valRegion2">-</div>
+        </div>
+
+        <!-- FME Information Cards -->
+        <div class="card">
+            <div class="card-label">FME</div>
+            <div class="card-value" id="valFme">-</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">FME RM</div>
+            <div class="card-value" id="valFmeRm">-</div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-label">FME Phone Contact(s)</div>
+            <div class="card-value" id="valFmeTels">-</div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const statusMsg = document.getElementById('status-msg');
+    const searchBtn = document.getElementById('searchBtn');
+    const siteIdInput = document.getElementById('siteIdInput');
+    const resultsGrid = document.getElementById('resultsGrid');
+    const cardBackbone = document.getElementById('cardBackbone');
+    const mainContainer = document.getElementById('mainContainer');
+    if (window.lucide) lucide.createIcons();
+
+    function getCleanCellValue(cell) {
+        if (!cell || cell.value === null || cell.value === undefined) return "";
+        let val = "";
+        if (cell.value instanceof Date) val = cell.value.toISOString();
+        else if (typeof cell.value === 'object') {
+            if (cell.value.result instanceof Date) val = cell.value.result.toISOString();
+            else if (cell.value.result !== undefined) val = String(cell.value.result).trim();
+            else if (cell.value.richText !== undefined) {
+                val = cell.value.richText.map(t => t.text || "").join("").trim();
+            } else if (cell.value.text !== undefined) val = String(cell.value.text).trim();
+        } else {
+            val = String(cell.value).trim();
+        }
+        
+        return (val === "0" || val === "") ? "" : val;
+    }
+
+    // Fetches and parses the latest version of ref1.xlsx on demand
+    async function fetchLatestDatabase() {
+        const sitesDb = {};
+        
+        // Cache-busting timestamp + explicit no-cache headers
+        const response = await fetch(`../ref1.xlsx?t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (!response.ok) throw new Error("Could not fetch 'ref1.xlsx' from directory.");
+
+        const buffer = await response.arrayBuffer();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
+        const sheet = workbook.worksheets[0];
+
+        let headers = [];
+        sheet.getRow(1).eachCell((cell, colNum) => {
+            headers[colNum] = getCleanCellValue(cell).toLowerCase().replace(/\s+/g, ' ').trim();
+        });
+
+        const idxSiteId = headers.indexOf('site id');
+        const idxSiteName = headers.indexOf('site name');
+        const idxPowerCo = headers.indexOf('new power owner');
+        const idxChildren = headers.indexOf('children');
+        const idxBackbone = headers.indexOf('backbone site');
+        const idxRegion = headers.indexOf('region');
+        const idxRegion2 = headers.indexOf('region 2');
+        const idxRural = headers.indexOf('rural sites');
+        const idxPowerType = headers.indexOf('power type');
+        const idxFme = headers.indexOf('fme');
+        const idxFmeTel1 = headers.indexOf('fme tel 1');
+        const idxFmeTel2 = headers.indexOf('fme tel 2');
+        const idxFmeTel3 = headers.indexOf('fme tel 3');
+        const idxFmeRm = headers.indexOf('fme rm');
+
+        sheet.eachRow((row, rowNum) => {
+            if (rowNum === 1) return;
+            
+            const siteId = getCleanCellValue(row.getCell(idxSiteId));
+            if (!siteId) return;
+
+            const tels = [
+                getCleanCellValue(row.getCell(idxFmeTel1)),
+                getCleanCellValue(row.getCell(idxFmeTel2)),
+                getCleanCellValue(row.getCell(idxFmeTel3))
+            ].filter(Boolean);
+
+            sitesDb[siteId] = {
+                siteName: getCleanCellValue(row.getCell(idxSiteName)) || "N/A",
+                powerOwner: getCleanCellValue(row.getCell(idxPowerCo)) || "N/A",
+                children: getCleanCellValue(row.getCell(idxChildren)) || "0",
+                backbone: getCleanCellValue(row.getCell(idxBackbone)) || "no",
+                region: getCleanCellValue(row.getCell(idxRegion)) || "N/A",
+                region2: getCleanCellValue(row.getCell(idxRegion2)) || "N/A",
+                rural: getCleanCellValue(row.getCell(idxRural)) || "0",
+                powerType: getCleanCellValue(row.getCell(idxPowerType)) || "N/A",
+                fme: getCleanCellValue(row.getCell(idxFme)) || "N/A",
+                fmeRm: getCleanCellValue(row.getCell(idxFmeRm)) || "N/A",
+                fmeTels: tels.length > 0 ? tels.join(" / ") : "N/A"
+            };
+        });
+
+        return sitesDb;
+    }
+
+    function applyOwnerTheme(ownerName) {
+        mainContainer.className = 'container';
+
+        const cleanOwner = (ownerName || '').toUpperCase().trim();
+
+        if (cleanOwner.includes('IHS')) {
+            mainContainer.classList.add('owner-ihs', 'theme-ihs');
+        } else if (cleanOwner.includes('CAMUSAT')) {
+            mainContainer.classList.add('owner-camusat', 'theme-camusat');
+        } else if (cleanOwner.includes('OCM') || cleanOwner.includes('ORANGE')) {
+            mainContainer.classList.add('owner-ocm', 'theme-ocm');
+        } else {
+            mainContainer.classList.add('owner-default', 'theme-default');
+        }
+    }
+
+    async function handleSearch() {
+        const query = siteIdInput.value.trim();
+        if (!query) return;
+
+        // UI state lock during fetch
+        searchBtn.disabled = true;
+        statusMsg.innerText = "Fetching latest database details...";
+        statusMsg.className = "info";
+
+        try {
+            const sitesDb = await fetchLatestDatabase();
+            const data = sitesDb[query];
+
+            if (!data) {
+                resultsGrid.style.display = 'none';
+                mainContainer.className = 'container';
+                statusMsg.innerText = `No record found for Site ID: ${query}`;
+                statusMsg.className = "error";
+                return;
+            }
+
+            document.getElementById('valSiteHeader').innerText = `${data.siteName} (ID: ${query})`;
+            document.getElementById('valPowerOwner').innerText = data.powerOwner;
+            document.getElementById('valPowerType').innerText = data.powerType;
+            document.getElementById('valChildren').innerText = data.children;
+            document.getElementById('valBackbone').innerText = data.backbone.toUpperCase();
+            document.getElementById('valRural').innerText = data.rural;
+            document.getElementById('valRegion').innerText = data.region;
+            document.getElementById('valRegion2').innerText = data.region2;
+            document.getElementById('valFme').innerText = data.fme;
+            document.getElementById('valFmeRm').innerText = data.fmeRm;
+            document.getElementById('valFmeTels').innerText = data.fmeTels;
+
+            applyOwnerTheme(data.powerOwner);
+
+            if (data.backbone.toLowerCase() === 'yes') {
+                cardBackbone.classList.add('backbone-yes');
+            } else {
+                cardBackbone.classList.remove('backbone-yes');
+            }
+
+            statusMsg.innerText = "";
+            resultsGrid.style.display = 'grid';
+        } catch (err) {
+            resultsGrid.style.display = 'none';
+            statusMsg.innerText = err.message;
+            statusMsg.className = "error";
+        } finally {
+            searchBtn.disabled = false;
+        }
+    }
+
+    searchBtn.addEventListener('click', handleSearch);
+    siteIdInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+    });
+</script>
+
+</body>
+</html>

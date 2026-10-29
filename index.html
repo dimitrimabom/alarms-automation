@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outils réseau</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/layout-dashboard.svg">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <style>
+        :root {
+            --ink: #17231f;
+            --muted: #64716c;
+            --line: #dce4df;
+            --paper: #fff;
+            --canvas: #edf1ed;
+            --amber: #f2bf24;
+            --green: #21463a;
+            --teal: #087e83;
+        }
+        * { box-sizing: border-box; }
+        body {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 22px;
+            background-color: var(--canvas);
+            background-image: linear-gradient(rgba(255,255,255,0.42) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.42) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+        }
+        .menu-shell {
+            width: min(100%, 1040px);
+        }
+        .menu-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            flex: 0 0 54px;
+            width: 54px;
+            height: 54px;
+            border-radius: 8px;
+            background: var(--amber);
+            color: #241e0b;
+        }
+        .brand-mark .lucide { width: 27px; height: 27px; }
+        .eyebrow {
+            margin: 0 0 5px;
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+        h1 {
+            margin: 0;
+            color: var(--ink);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            line-height: 1.15;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .menu-option {
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--amber);
+            border-radius: 8px;
+            background: var(--paper);
+            color: inherit;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(24, 45, 37, 0.07);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+        .menu-option:nth-child(2) { border-top-color: var(--green); }
+        .menu-option:nth-child(3) { border-top-color: var(--teal); }
+        .menu-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 34px rgba(24, 45, 37, 0.12);
+        }
+        .menu-option:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 3px;
+        }
+        .option-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            margin-bottom: 25px;
+            border-radius: 7px;
+            background: #fff5d5;
+            color: #765900;
+        }
+        .menu-option:nth-child(2) .option-icon { background: #e8f0eb; color: var(--green); }
+        .menu-option:nth-child(3) .option-icon { background: #e5f4f2; color: var(--teal); }
+        .option-icon .lucide { width: 22px; height: 22px; }
+        .menu-option h2 {
+            margin: 0 0 8px;
+            color: var(--ink);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 19px;
+        }
+        .menu-option p {
+            margin: 0 0 22px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .open-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: auto;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .open-label .lucide { width: 15px; height: 15px; }
+        @media (max-width: 760px) {
+            body { padding: 30px 16px; }
+            .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 520px) {
+            .menu-header { margin-bottom: 22px; }
+            .brand-mark { flex-basis: 46px; width: 46px; height: 46px; }
+            h1 { font-size: 27px; }
+            .menu-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+            .menu-option { min-height: 0; padding: 18px; }
+            .option-icon { margin-bottom: 17px; }
+            .menu-option p { margin-bottom: 16px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+<main class="menu-shell">
+    <header class="menu-header">
+        <div class="brand-mark" aria-hidden="true"><i data-lucide="layout-dashboard"></i></div>
+        <div>
+            <p class="eyebrow">Network operations</p>
+            <h1>Choisir un outil</h1>
+        </div>
+    </header>
+    <nav class="menu-grid" aria-label="Outils disponibles">
+        <a class="menu-option" href="poweralarms.html" target="_blank" rel="noopener">
+            <span class="option-icon" aria-hidden="true"><i data-lucide="zap"></i></span>
+            <h2>Alarmes électriques</h2>
+            <p>Importer un export d’alarmes et générer un rapport enrichi.</p>
+            <span class="open-label">Ouvrir dans un nouvel onglet <i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+        </a>
+        <a class="menu-option" href="search.html" target="_blank" rel="noopener">
+            <span class="option-icon" aria-hidden="true"><i data-lucide="radio-tower"></i></span>
+            <h2>Recherche de site</h2>
+            <p>Consulter les informations et contacts associés à un site.</p>
+            <span class="open-label">Ouvrir dans un nouvel onglet <i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+        </a>
+        <a class="menu-option" href="sitesdown.html" target="_blank" rel="noopener">
+            <span class="option-icon" aria-hidden="true"><i data-lucide="activity"></i></span>
+            <h2>Sites indisponibles</h2>
+            <p>Traiter un export de pannes et regrouper les incidents.</p>
+            <span class="open-label">Ouvrir dans un nouvel onglet <i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+        </a>
+    </nav>
+</main>
+<script>
+    if (window.lucide) lucide.createIcons();
+</script>
+</body>
+</html>
